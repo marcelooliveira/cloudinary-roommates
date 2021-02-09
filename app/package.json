@@ -12,6 +12,7 @@
     "@fortawesome/free-regular-svg-icons": "^5.15.2",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
+    "@sanity/client": "^2.2.6",
     "bootstrap": "^4.6.0",
     "lokijs": "^1.5.11",
     "netlify-identity-widget": "^1.9.1",
