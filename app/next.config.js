@@ -1,4 +1,7 @@
 module.exports = {
   distDir: 'dist',
-  target: 'serverless'
+  target: 'serverless',
+  publicRuntimeConfig: {
+    lokiDatabase: '/tmp/loki-v1.db'
+  }
 }
