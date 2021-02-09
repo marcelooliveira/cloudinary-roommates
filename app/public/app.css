@@ -1,0 +1,23 @@
+ul.netlify-identity-menu
+{
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  text-align: right;
+}
+
+li
+{
+  background-repeat: no-repeat;
+  background-position: 100% .4em;
+  padding-right: .6em;
+}
+
+.login-menu {
+  display: flex;
+}
+
+.netlify-identity-menu:nth-of-type(2) {
+  display: none;
+}
+
