@@ -48,13 +48,24 @@ const Home = () => {
     }, (error, result) => {
 
       if (result.event == "success") {
-        if (result.info.resource_type == "video") {
 
-          var videoId = result.info.public_id;
+        console.log(result.info);
 
+        if (result.info.resource_type == "image") {
           fetch('/api/rooms/' + room._id, {
             method: 'POST',
-            body: JSON.stringify({ videoId: videoId }),
+            body: JSON.stringify({ pic: result.info.secure_url }),
+            headers: {
+              'Content-Type': 'application/json'
+            },
+          })
+          .then(res => mutate(room));
+        }
+
+        if (result.info.resource_type == "video") {
+          fetch('/api/rooms/' + room._id, {
+            method: 'POST',
+            body: JSON.stringify({ videoId: result.info.public_id }),
             headers: {
               'Content-Type': 'application/json'
             },
@@ -103,7 +114,7 @@ const Home = () => {
                 <button
                 name="upload_widget"
                 className="btn btn-primary btn-sm"
-                onClick={uploadMediaClick.bind(this, room)}><FontAwesomeIcon icon={fasUpload} />&nbsp;Upload Video</button>
+                onClick={uploadMediaClick.bind(this, room)}><FontAwesomeIcon icon={fasUpload} />&nbsp;Upload Media</button>
                 &nbsp;
               </span>;
             }
@@ -185,13 +196,13 @@ const Home = () => {
                         <span>&nbsp;{room.cars}&nbsp;</span>
                       </b>
                     </Card.Text>
-                    <Row>
+                    <Card.Text>
                       {uploadButton}
                       {playButton}
                       {requestButton}
                       {pendingRequestButton}
                       {approvedRequestButton}
-                    </Row>
+                    </Card.Text>
                   </Card.Body>
                 </Card>
               </Col>

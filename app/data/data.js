@@ -3,7 +3,7 @@ export const data =
   {
     "number": 1,
     "price": 124,
-    "address": "4762  Francis Mine 07:46PM",
+    "address": "4762  Francis Mine",
     "pic": "/img/01.jpg",
     "bedrooms": 5,
     "bathrooms": 4,

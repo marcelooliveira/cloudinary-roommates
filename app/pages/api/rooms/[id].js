@@ -96,6 +96,10 @@ function updateRoom(res, roomId, requestBody) {
       doc.videoId = requestBody.videoId;
     }
 
+    if (requestBody.pic) {
+      doc.pic = requestBody.pic;
+    }
+
     if (requestBody.requester) {
       if (!doc.pendingRequests) {
         doc.pendingRequests = [];
