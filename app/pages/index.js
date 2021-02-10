@@ -22,7 +22,7 @@ const Home = () => {
   const [userEmail, setUserEmail] = useState('');
   const [widgetInitialized, setWidgetInitialized] = useState(false);
   const { data, error } = useSWR('/api/rooms/0', fetcher)
-  
+
   useEffect(() => {
     if (!widgetInitialized) {
       netlifyIdentity.on('init', () => {
@@ -40,19 +40,19 @@ const Home = () => {
   })
 
   const uploadMediaClick = async (room) => {
-    
+
     var myWidget = cloudinary.createUploadWidget({
       cloudName: publicRuntimeConfig.cloudinaryCloudName,
       upload_preset: publicRuntimeConfig.cloudinaryUploadPreset,
       showAdvancedOptions: true
-    }, (error, result) => { 
-      
+    }, (error, result) => {
+
       if (result.event == "success") {
         if (result.info.resource_type == "video") {
-          
+
           var videoId = result.info.public_id;
-          
-          fetch('/api/rooms/' + room.$loki, {
+
+          fetch('/api/rooms/' + room._id, {
             method: 'POST',
             body: JSON.stringify({ videoId: videoId }),
             headers: {
@@ -61,18 +61,18 @@ const Home = () => {
           })
           .then(res => mutate(room));
         }
-      } 
+      }
       else {
         console.log(error);
       }
     })
-    
-    myWidget.update({tags: ['room-' + room.$loki]});
+
+    myWidget.update({tags: ['room-' + room._id]});
     myWidget.open();
   }
 
   const requestVideo = async (room) => {
-    fetch('/api/rooms/' + room.$loki, {
+    fetch('/api/rooms/' + room._id, {
       method: 'POST',
       body: JSON.stringify({ requester: userEmail }),
       headers: {
@@ -96,29 +96,29 @@ const Home = () => {
             let requestButton;
             let pendingRequestButton;
             let approvedRequestButton;
-            
+
             if (userEmail === room.owner) {
-              uploadButton = 
+              uploadButton =
               <span>
-                <button 
-                name="upload_widget" 
+                <button
+                name="upload_widget"
                 className="btn btn-primary btn-sm"
                 onClick={uploadMediaClick.bind(this, room)}><FontAwesomeIcon icon={fasUpload} />&nbsp;Upload Video</button>
                 &nbsp;
               </span>;
-            } 
-            
+            }
+
             if (room.videoId && userEmail === room.owner) {
-              playButton = 
+              playButton =
               <span>
-                <Button 
+                <Button
                 href={`/play-video/${room.number}`}
                 target="_blank" size="sm" className="btn-success"><FontAwesomeIcon icon={fasPlay} />&nbsp;Play Video
                 </Button>
                 &nbsp;
               </span>;
             }
-            
+
             if (room.videoId && userEmail && userEmail != room.owner
               && (!room.pendingRequests
                 || room.pendingRequests
@@ -126,7 +126,7 @@ const Home = () => {
                 && (!room.approvedRequests
                   || room.approvedRequests
                   .filter(e => e && (e == userEmail)).length == 0)) {
-                    requestButton = 
+                    requestButton =
                     <span>
                 <Button size="sm" className="btn-warning"
                   onClick={requestVideo.bind(this, room)}>
@@ -135,12 +135,12 @@ const Home = () => {
                 &nbsp;
               </span>;
             }
-            
+
             if (room.videoId && userEmail && userEmail != room.owner
               && room.pendingRequests
               && room.pendingRequests
-              .filter(e => e.login == userEmail).length > 0) {                
-                pendingRequestButton = 
+              .filter(e => e.login == userEmail).length > 0) {
+                pendingRequestButton =
                 <span>
                 <Button size="sm" className="btn-warning" disabled>
                   <FontAwesomeIcon icon={fasClock} />&nbsp;Request Pending
@@ -148,21 +148,21 @@ const Home = () => {
                 &nbsp;
               </span>;
             }
-            
+
             if (room.videoId && userEmail && userEmail != room.owner
               && room.approvedRequests
               && room.approvedRequests
-              .filter(e => e && (e == userEmail)).length > 0) {                
-                approvedRequestButton = 
+              .filter(e => e && (e == userEmail)).length > 0) {
+                approvedRequestButton =
               <span>
                 <Button target="_blank" size="sm" className="btn-success"
-                href={`/play-video/${room.$loki}`}>
+                href={`/play-video/${room._id}`}>
                   <FontAwesomeIcon icon={fasPlay} />&nbsp;Watch Video
                 </Button>
                 &nbsp;
               </span>;
             }
-            
+
             return (
               <Col key={room.number} id="hits" className="col-xs-12 col-sm-6 col-md-4 p-3">
                 <Card className="shadow">
@@ -175,7 +175,6 @@ const Home = () => {
                     </h5>
                     <Card.Text><b>{room.address}</b></Card.Text>
                     <Card.Text><b>owner: {room.owner}</b></Card.Text>
-                    {/* <Card.Text><b>room: {JSON.stringify(room)}</b></Card.Text> */}
                     <Card.Text className="description" title="{realEstate.description}">
                       <b>
                         <FontAwesomeIcon icon={fasBed} />

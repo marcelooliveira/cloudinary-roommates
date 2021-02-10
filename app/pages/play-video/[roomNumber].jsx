@@ -18,7 +18,7 @@ const fetcher = (url) => fetch(url).then((r) => r.json());
 
 const approveRequest = async (room, requester) => {
 
-  fetch('/api/rooms/' + room.$loki, {
+  fetch('/api/rooms/' + room._id, {
     method: 'POST',
     body: JSON.stringify({ approvedRequester: requester }),
     headers: {

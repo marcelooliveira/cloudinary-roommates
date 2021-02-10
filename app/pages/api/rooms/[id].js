@@ -25,7 +25,6 @@ export default async (req, res) => {
       updateRoom(res, roomId, req.body);
       break
     default:
-      res.setHeader('Allow', ['GET', 'POST'])
       res.status(405).end(`Method ${req.method} Not Allowed`)
       break
   }
@@ -95,7 +94,6 @@ function updateRoom(res, roomId, requestBody) {
 
     if (requestBody.videoId) {
       doc.videoId = requestBody.videoId;
-      rooms.update(doc);
     }
 
     if (requestBody.requester) {
@@ -105,7 +103,6 @@ function updateRoom(res, roomId, requestBody) {
 
       if (doc.pendingRequests.filter(e => e.login === requestBody.requester.login).length == 0) {
         doc.pendingRequests.push(requestBody.requester);
-        rooms.update(doc);
       }
     }
 
@@ -120,20 +117,11 @@ function updateRoom(res, roomId, requestBody) {
         doc.approvedRequests = [];
       }
       doc.approvedRequests.push(requestBody.approvedRequester);
-      rooms.update(doc);
     }
-  
-    res.status(200).json(doc);
+
+    client.createOrReplace(doc)
+
+    res.status(200).json(doc)
   })
 
-  client
-  .patch(roomId.toString())
-  .set({inStock: false})
-  .commit()
-  .then(updatedRoom => {
-    res.status(200).json(updatedRoom);
-  })
-  .catch(err => {
-    res.status(500).json('Update failed: ' + err.message)
-  })
 }
