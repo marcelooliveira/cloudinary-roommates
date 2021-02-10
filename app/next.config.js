@@ -11,5 +11,8 @@ module.exports = {
     cloudinaryUploadPreset: cloudinaryUploadPreset,
     sanityProjectId: sanityProjectId,
     sanityApiToken: sanityApiToken
+  },
+  images: {
+    domains: ['res.cloudinary.com']
   }
 }

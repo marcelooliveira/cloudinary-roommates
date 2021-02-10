@@ -3,6 +3,7 @@ import Layout from "../components/Layout";
 import {Row, Col} from 'react-bootstrap'
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
+import Image from 'next/image'
 import { faHome as fasHome, faBed as fasBed, faBath as fasBath, faCar as fasCar } from '@fortawesome/free-solid-svg-icons';
 import { faUpload as fasUpload, faPlay as fasPlay, faDownload as fasDownload, faClock as fasClock } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
@@ -177,7 +178,7 @@ const Home = () => {
             return (
               <Col key={room.number} id="hits" className="col-xs-12 col-sm-6 col-md-4 p-3">
                 <Card className="shadow">
-                  <img src={room.pic} className="card-img-top img-estate" />
+                  <Image src={room.pic} className="card-img-top img-estate" width={500} height={333}></Image>
                   <Card.Body>
                     <h5 className="card-title">
                       <NumberFormat value={room.price} displayType={'text'} thousandSeparator={true} prefix={'$'} />
