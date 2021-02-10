@@ -1,31 +1,139 @@
+import { data as roomData } from '../../../data/data.js';
 import sanityClient from '@sanity/client'
 import getConfig from 'next/config';
 
 const { publicRuntimeConfig } = getConfig();
 
 export default async (req, res) => {
-  const client = sanityClient({
-    projectId: 'vlc5ujic',
-    dataset: 'rooms',
-    token: publicRuntimeConfig.sanityApiToken,
-    useCdn: false // `false` if you want to ensure fresh data
-  })
+  const roomId = req.query['id'];
+  
+  switch (req.method) {
+    case 'GET':
+      if (!roomId) {
+        res.status(400).end() //Bad Request
+        return;
+      }
 
-  const doc = {
-    _id: '1',
-    _type: 'room',
-    number: 1,
-    price: 124,
-    address: "4762  Francis Mine 07:46PM",
-    pic: "/img/01.jpg",
-    bedrooms: 5,
-    bathrooms: 4,
-    cars: 3,
-    owner: "mclricardo@gmail.com",
-    videoId: ""
+      if (parseInt(roomId) > 0) {
+        getRoom(res, roomId);
+        return;
+      }
+
+      getAllRooms(res);
+      break
+    case 'POST':
+      updateRoom(res, roomId, req.body);
+      break
+    default:
+      res.setHeader('Allow', ['GET', 'POST'])
+      res.status(405).end(`Method ${req.method} Not Allowed`)
+      break
   }
 
-  client.createOrReplace(doc).then(result => {
-    res.status(200).json(result);
+};
+
+function getSanityClient() {
+  return sanityClient({
+    projectId: publicRuntimeConfig.sanityProjectId,
+    dataset: 'rooms',
+    token: publicRuntimeConfig.sanityApiToken,
+    useCdn: false
+  })
+}
+
+function getRoom(res, roomId) {
+  const client = getSanityClient()
+
+  const query = '*[_type == "room"]'
+  const params = {}
+  
+  client.getDocument(roomId.toString()).then(doc => {
+    if (!doc) {
+      res.status(404).end(`room Id=${roomId} Not Found`);
+      return;
+    }
+
+    res.status(200).json(doc);
+  })
+}
+
+function getAllRooms(res) {
+  const client = getSanityClient()
+
+  const query = '*[_type == "room"]'
+  const params = {}
+  
+  client.fetch(query, params).then(docs => {
+    
+    if (docs
+      && docs.length > 0) {
+        res.status(200).json(docs)
+        return
+    }
+
+    roomData.forEach(room => {
+      let doc = room
+      doc._id = room.number.toString()
+      doc._type = 'room'
+      client.createOrReplace(doc)
+    })
+  
+    client.fetch(query, params).then(docs => {
+      res.status(200).json(docs)
+    })
+  })
+}
+
+function updateRoom(res, roomId, requestBody) {
+  const client = getSanityClient()
+  
+  client.getDocument(roomId.toString()).then(doc => {
+    if (!doc) {
+      res.status(404).end(`room Id=${roomId} Not Found`);
+      return;
+    }
+
+    if (requestBody.videoId) {
+      doc.videoId = requestBody.videoId;
+      rooms.update(doc);
+    }
+
+    if (requestBody.requester) {
+      if (!doc.pendingRequests) {
+        doc.pendingRequests = [];
+      }
+
+      if (doc.pendingRequests.filter(e => e.login === requestBody.requester.login).length == 0) {
+        doc.pendingRequests.push(requestBody.requester);
+        rooms.update(doc);
+      }
+    }
+
+    if (requestBody.approvedRequester) {
+      var filtered = doc.pendingRequests.filter(function(pendingRequest, index, arr){ 
+        return pendingRequest.login != requestBody.approvedRequester.login;
+      });
+      
+      doc.pendingRequests = filtered;
+  
+      if (!doc.approvedRequests) {
+        doc.approvedRequests = [];
+      }
+      doc.approvedRequests.push(requestBody.approvedRequester);
+      rooms.update(doc);
+    }
+  
+    res.status(200).json(doc);
+  })
+
+  client
+  .patch(roomId.toString())
+  .set({inStock: false})
+  .commit()
+  .then(updatedRoom => {
+    res.status(200).json(updatedRoom);
+  })
+  .catch(err => {
+    res.status(500).json('Update failed: ' + err.message)
   })
 }

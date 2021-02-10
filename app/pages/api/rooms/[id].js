@@ -1,5 +1,8 @@
 import { data as roomData } from '../../../data/data.js';
-import getDB from '../../../data/getDB.js';
+import sanityClient from '@sanity/client'
+import getConfig from 'next/config';
+
+const { publicRuntimeConfig } = getConfig();
 
 export default async (req, res) => {
   const roomId = req.query['id'];
@@ -29,58 +32,64 @@ export default async (req, res) => {
 
 };
 
+function getSanityClient() {
+  return sanityClient({
+    projectId: publicRuntimeConfig.sanityProjectId,
+    dataset: 'rooms',
+    token: publicRuntimeConfig.sanityApiToken,
+    useCdn: false
+  })
+}
+
 function getRoom(res, roomId) {
-  getDB(loadHandler);
+  const client = getSanityClient()
 
-  function loadHandler(db) {
-    db.loadDatabase();
-    var rooms = db.getCollection('rooms');
-
-    if (rooms === null) {
-      res.status(404).end(`rooms collection Not Found`);
-      return;
-    }
-
-    let doc = rooms.get(roomId);
+  const query = '*[_type == "room"]'
+  const params = {}
+  
+  client.getDocument(roomId.toString()).then(doc => {
     if (!doc) {
-      res.status(404).end(`roomId Not Found`);
+      res.status(404).end(`room Id=${roomId} Not Found`);
       return;
     }
 
     res.status(200).json(doc);
-  }
+  })
 }
 
 function getAllRooms(res) {
-  getDB(loadHandler);
+  const client = getSanityClient()
 
-  function loadHandler(db) {
-
-    var rooms = db.getCollection('rooms');
-
-    if (rooms === null) {
-      rooms = db.addCollection('rooms');
-      rooms.insert(roomData);
-      db.saveDatabase();
+  const query = '*[_type == "room"]'
+  const params = {}
+  
+  client.fetch(query, params).then(docs => {
+    
+    if (docs
+      && docs.length > 0) {
+        res.status(200).json(docs)
+        return
     }
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.status(200).json(rooms.data);
-  }
+
+    roomData.forEach(room => {
+      let doc = room
+      doc._id = room.number.toString()
+      doc._type = 'room'
+      client.createOrReplace(doc)
+    })
+  
+    client.fetch(query, params).then(docs => {
+      res.status(200).json(docs)
+    })
+  })
 }
 
 function updateRoom(res, roomId, requestBody) {
-  getDB(loadHandler);
+  const client = getSanityClient()
   
-  function loadHandler(db) {
-    var rooms = db.getCollection('rooms');
-    if (!rooms) {
-      res.status(500).json('rooms collection not found!');
-      return;
-    }
-
-    let doc = rooms.get(roomId);
+  client.getDocument(roomId.toString()).then(doc => {
     if (!doc) {
-      res.status(404).end(`roomId ${roomId} Not Found`);
+      res.status(404).end(`room Id=${roomId} Not Found`);
       return;
     }
 
@@ -106,16 +115,25 @@ function updateRoom(res, roomId, requestBody) {
       });
       
       doc.pendingRequests = filtered;
-
+  
       if (!doc.approvedRequests) {
         doc.approvedRequests = [];
       }
       doc.approvedRequests.push(requestBody.approvedRequester);
       rooms.update(doc);
     }
+  
+    res.status(200).json(doc);
+  })
 
-    db.saveDatabase();
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.status(200).json('Room ' + roomId + ' updated successfully.');
-  }
+  client
+  .patch(roomId.toString())
+  .set({inStock: false})
+  .commit()
+  .then(updatedRoom => {
+    res.status(200).json(updatedRoom);
+  })
+  .catch(err => {
+    res.status(500).json('Update failed: ' + err.message)
+  })
 }
