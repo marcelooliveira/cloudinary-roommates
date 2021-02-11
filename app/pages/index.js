@@ -16,7 +16,7 @@ import UploadButton from "../components/UploadButton";
 import PlayButton from "../components/PlayButton";
 import RequestButton from "../components/RequestButton";
 import PendingRequestButton from "../components/PendingRequestButton";
-import ApprovedRequestButton from "../components/ApprovedRequestButton";
+import WatchVideoButton from "../components/WatchVideoButton";
 
 const { publicRuntimeConfig } = getConfig();
 
@@ -79,7 +79,7 @@ const Home = () => {
                       <PlayButton userEmail={userEmail} room={room}/>
                       <RequestButton userEmail={userEmail} room={room}/>
                       <PendingRequestButton userEmail={userEmail} room={room}/>
-                      <ApprovedRequestButton userEmail={userEmail} room={room}/>
+                      <WatchVideoButton userEmail={userEmail} room={room}/>
                     </Card.Text>
                   </Card.Body>
                 </Card>

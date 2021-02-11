@@ -3,33 +3,18 @@ import React, { useState, useEffect } from 'react';
 import Layout from "../../components/Layout";
 import {Row, Col} from 'react-bootstrap'
 import Card from "react-bootstrap/Card";
-import Button from "react-bootstrap/Button";
-import { faHome as fasHome, faBed as fasBed, faBath as fasBath, faCar as fasCar, faUserCheck as fasUserCheck } from '@fortawesome/free-solid-svg-icons';
+import { faBed as fasBed, faBath as fasBath, faCar as fasCar } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { default as NumberFormat } from 'react-number-format';
-import useSWR, { mutate } from 'swr'
+import useSWR from 'swr'
 import getConfig from 'next/config';
 import netlifyIdentity from 'netlify-identity-widget';
+import ApproveButton from '../../components/ApproveButton'
 
 const { publicRuntimeConfig } = getConfig();
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
-
-const approveRequest = async (room, requester) => {
-
-  fetch('/api/rooms/' + room._id, {
-    method: 'POST',
-    body: JSON.stringify({ approvedRequester: requester }),
-    headers: {
-      'Content-Type': 'application/json'
-    },
-  })
-  .then(res => {
-    alert('You have approved this video for the selected user.')
-    return mutate(room);
-  });
-}
 
 const PlayVideo = () => {
   const [userEmail, setUserEmail] = useState('');
@@ -54,10 +39,10 @@ const PlayVideo = () => {
       setWidgetInitialized(true)
     }
   })
-
+  
   if (error) return <div>failed to load</div>
   if (!data) return <div>loading...</div>
-  
+    
   const videoUrl = 'https://player.cloudinary.com/embed/'
   + '?cloud_name=' + publicRuntimeConfig.cloudinaryCloudName
   + '&public_id=' + data.videoId
@@ -86,6 +71,7 @@ const PlayVideo = () => {
                       <Card.Text><b>{data.address}</b></Card.Text>
                       <Card.Text><b>owner: {data.owner}</b></Card.Text>
                       <Card.Text><b>userEmail: {userEmail}</b></Card.Text>
+                      {/* <Card.Text><b>{JSON.stringify(data)}</b></Card.Text> */}
                       <Card.Text className="description" title="{realEstate.description}">
                         <b>
                           <FontAwesomeIcon icon={fasBed} />
@@ -101,26 +87,10 @@ const PlayVideo = () => {
               </Col>
             </Row>
             { 
-            userEmail && userEmail == data.owner
-            && data.pendingRequests
-            && data.pendingRequests.map((requester) => {
-              return (<Row>
-                <Col>
-                  <Card className="shadow">
-                    <Card.Body>
-                      <Card.Text>
-                        User <b>{requester}</b> has requested to watch this video.
-                        &nbsp;
-                        <Button size="sm" className="btn-success"
-                        onClick={approveRequest.bind(this, data, requester)}>
-                          <FontAwesomeIcon icon={fasUserCheck} />&nbsp;Approve
-                        </Button>
-                      </Card.Text>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>)
-            })}
+              data.pendingRequests.map((requester) => {
+                return <ApproveButton key={data.requester} userEmail={userEmail} requester={requester} room={data}/>
+              })
+            }
         </div>
       </div>
     </Layout>

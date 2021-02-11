@@ -2,7 +2,7 @@ import Button from "react-bootstrap/Button";
 import { faPlay as fasPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-const ApprovedRequestButton = (props) => {
+const WatchVideoButton = (props) => {
   let room = props.room;
   let userEmail = props.userEmail;
 
@@ -21,4 +21,4 @@ const ApprovedRequestButton = (props) => {
     : null
 }
 
-export default ApprovedRequestButton
+export default WatchVideoButton

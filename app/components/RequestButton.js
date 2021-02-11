@@ -16,7 +16,6 @@ const RequestButton = (props) => {
       },
     })
     .then(res => {
-      alert('You have requested the video for this room. Wait until the owner accept your solicitation.')
       return mutate('/api/rooms/' + room._id);
     });
   }
