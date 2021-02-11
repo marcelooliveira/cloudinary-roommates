@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Layout from "../components/Layout";
 import {Row, Col} from 'react-bootstrap'
 import Card from "react-bootstrap/Card";
-import Button from "react-bootstrap/Button";
 import Image from 'next/image'
-import { faHome as fasHome, faBed as fasBed, faBath as fasBath, faCar as fasCar } from '@fortawesome/free-solid-svg-icons';
-import { faUpload as fasUpload, faPlay as fasPlay, faDownload as fasDownload, faClock as fasClock } from '@fortawesome/free-solid-svg-icons';
+import { faHome as fasHome, faBed as fasBed, faBath as fasBath, faCar as fasCar } 
+    from '@fortawesome/free-solid-svg-icons';
 import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { config } from '@fortawesome/fontawesome-svg-core'
@@ -13,155 +12,15 @@ import { default as NumberFormat } from 'react-number-format';
 import netlifyIdentity from 'netlify-identity-widget';
 import useSWR, { mutate } from 'swr'
 import getConfig from 'next/config';
+import UploadButton from "../components/UploadButton";
+import PlayButton from "../components/PlayButton";
+import RequestButton from "../components/RequestButton";
+import PendingRequestButton from "../components/PendingRequestButton";
+import ApprovedRequestButton from "../components/ApprovedRequestButton";
 
 const { publicRuntimeConfig } = getConfig();
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
-
-const UploadButton = (props) => {
-    let room = props.room;
-    let userEmail = props.userEmail;
-
-    const uploadMediaClick = async (room) => {
-
-      var myWidget = cloudinary.createUploadWidget({
-        cloudName: publicRuntimeConfig.cloudinaryCloudName,
-        upload_preset: publicRuntimeConfig.cloudinaryUploadPreset,
-        showAdvancedOptions: true
-      }, (error, result) => {
-  
-        if (result.event == "success") {
-  
-          console.log(result.info);
-  
-          if (result.info.resource_type == "image") {
-            fetch('/api/rooms/' + room._id, {
-              method: 'POST',
-              body: JSON.stringify({ pic: result.info.secure_url }),
-              headers: {
-                'Content-Type': 'application/json'
-              },
-            })
-            .then(res => mutate(room));
-          }
-  
-          if (result.info.resource_type == "video") {
-            fetch('/api/rooms/' + room._id, {
-              method: 'POST',
-              body: JSON.stringify({ videoId: result.info.public_id }),
-              headers: {
-                'Content-Type': 'application/json'
-              },
-            })
-            .then(res => mutate(room));
-          }
-        }
-        else {
-          console.log(error);
-        }
-      })
-  
-      myWidget.update({tags: ['room-' + room._id]});
-      myWidget.open();
-    }
-  
-    return (userEmail === room.owner)
-      ? (<span>
-        <button
-          name="upload_widget"
-          className="btn btn-primary btn-sm"
-          onClick={uploadMediaClick.bind(this, room)}><FontAwesomeIcon icon={fasUpload} />&nbsp;Upload Media</button>
-      &nbsp;
-      </span>)
-      : null
-  }
-
-
-const PlayButton = (props) => {
-  let room = props.room;
-  let userEmail = props.userEmail;
-
-  return (room.videoId && userEmail === room.owner)
-  ? (<span>
-        <Button
-        href={`/play-video/${room.number}`}
-        target="_blank" size="sm" className="btn-success"><FontAwesomeIcon icon={fasPlay} />&nbsp;Play Video
-        </Button>
-        &nbsp;
-      </span>)
-  : null
-}
-
-const RequestButton = (props) => {
-  let room = props.room;
-  let userEmail = props.userEmail;
-
-  const requestVideo = async (room) => {
-    fetch('/api/rooms/' + room._id, {
-      method: 'POST',
-      body: JSON.stringify({ requester: userEmail }),
-      headers: {
-          'Content-Type': 'application/json'
-      },
-    })
-    .then(res => {
-      alert('You have requested the video for this room. Wait until the owner accept your solicitation.')
-      return mutate(room);
-    });
-  }
-
-  return (room.videoId && userEmail && userEmail != room.owner
-    && (!room.pendingRequests
-      || room.pendingRequests
-      .filter(e => e === userEmail).length === 0)
-      && (!room.approvedRequests
-        || room.approvedRequests
-        .filter(e => e && (e == userEmail)).length == 0))
-        ? (<span>
-              <Button size="sm" className="btn-warning"
-                onClick={requestVideo.bind(this, room)}>
-                <FontAwesomeIcon icon={fasDownload} />&nbsp;Request Video
-              </Button>
-              &nbsp;
-            </span>)
-        : null
-}
-
-const PendingRequestButton = (props) => {
-  let room = props.room;
-  let userEmail = props.userEmail;
-
-  return (room.videoId && userEmail && userEmail != room.owner
-    && room.pendingRequests
-    && room.pendingRequests
-    .filter(e => e == userEmail).length > 0) 
-    ? <span>
-      <Button size="sm" className="btn-warning" disabled>
-        <FontAwesomeIcon icon={fasClock} />&nbsp;Request Pending
-      </Button>
-      &nbsp;
-    </span>
-    : null
-}
-
-const ApprovedRequestButton = (props) => {
-  let room = props.room;
-  let userEmail = props.userEmail;
-
-  return (room.videoId && userEmail && userEmail != room.owner
-    && room.approvedRequests
-    && room.approvedRequests
-    .filter(e => e && (e == userEmail)).length > 0) 
-    ? 
-    <span>
-      <Button target="_blank" size="sm" className="btn-success"
-      href={`/play-video/${room._id}`}>
-        <FontAwesomeIcon icon={fasPlay} />&nbsp;Watch Video
-      </Button>
-      &nbsp;
-    </span>
-    : null
-}
 
 const Home = () => {
   config.autoAddCss = false
