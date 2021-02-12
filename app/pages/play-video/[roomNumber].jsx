@@ -8,11 +8,9 @@ import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { default as NumberFormat } from 'react-number-format';
 import useSWR from 'swr'
-import getConfig from 'next/config';
 import netlifyIdentity from 'netlify-identity-widget';
 import ApproveButton from '../../components/ApproveButton'
-
-const { publicRuntimeConfig } = getConfig();
+import VideoPlayer from '../../components/VideoPlayer';
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
 
@@ -20,8 +18,7 @@ const PlayVideo = () => {
   const [userEmail, setUserEmail] = useState('');
   const [widgetInitialized, setWidgetInitialized] = useState(false);
   const router = useRouter()
-  const { roomNumber } = router.query;
-
+  const { roomNumber } = router.query
   const { data, error } = useSWR('/api/rooms/' + roomNumber, fetcher)
 
   useEffect(() => {
@@ -43,11 +40,6 @@ const PlayVideo = () => {
   if (error) return <div>failed to load</div>
   if (!data) return <div>loading...</div>
     
-  const videoUrl = 'https://player.cloudinary.com/embed/'
-  + '?cloud_name=' + publicRuntimeConfig.cloudinaryCloudName
-  + '&public_id=' + data.videoId
-  + '&fluid=true&controls=true&source_types%5B0%5D=mp4';
-
   return (
     <Layout>
       <div className="component-container p-4">
@@ -55,13 +47,7 @@ const PlayVideo = () => {
           <Row>
               <Col className="col-xs-12 col-sm-12 col-md-12 p-3">
                 <Card className="shadow">
-                  <iframe
-                    src={videoUrl}
-                    height="400"
-                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                    allowFullScreen
-                    frameBorder="0"
-                    ></iframe>
+                  <VideoPlayer room={data}/>
                     <Card.Body>
                       <h5 className="card-title">
                         <NumberFormat value={data.price} displayType={'text'} thousandSeparator={true} prefix={'$'} />
@@ -87,7 +73,8 @@ const PlayVideo = () => {
               </Col>
             </Row>
             { 
-              data.pendingRequests.map((requester) => {
+            data.pendingRequests
+              && data.pendingRequests.map((requester) => {
                 return <ApproveButton key={data.requester} userEmail={userEmail} requester={requester} room={data}/>
               })
             }
@@ -98,4 +85,3 @@ const PlayVideo = () => {
 };
 
 export default PlayVideo;
-
