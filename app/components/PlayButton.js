@@ -9,7 +9,7 @@ const PlayButton = (props) => {
   return (room.videoId && userEmail === room.owner)
   ? (<span>
         <Button
-        href={`/play-video/${room.number}`}
+        href={`/details/${room.number}`}
         target="_blank" size="sm" className="btn-success"><FontAwesomeIcon icon={fasPlay} />&nbsp;Play Video
         </Button>
         &nbsp;

@@ -13,7 +13,7 @@ const WatchVideoButton = (props) => {
     ? 
     <span>
       <Button target="_blank" size="sm" className="btn-success"
-      href={`/play-video/${room._id}`}>
+      href={`/details/${room._id}`}>
         <FontAwesomeIcon icon={fasPlay} />&nbsp;Watch Video
       </Button>
       &nbsp;

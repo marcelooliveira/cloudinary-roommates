@@ -9,7 +9,7 @@ const Header = () => {
   return (
     <header>
       <Row>
-        <Col sm={6}>
+        <Col sm={9}>
           <nav className="login-menu">
             <ul>
               <li>
@@ -24,7 +24,7 @@ const Header = () => {
             </ul>
           </nav>
         </Col>
-        <Col sm={6}>
+        <Col sm={3}>
           <div data-netlify-identity-menu></div>
         </Col>
       </Row>

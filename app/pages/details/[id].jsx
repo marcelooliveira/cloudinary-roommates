@@ -18,8 +18,8 @@ const PlayVideo = () => {
   const [userEmail, setUserEmail] = useState('');
   const [widgetInitialized, setWidgetInitialized] = useState(false);
   const router = useRouter()
-  const { roomNumber } = router.query
-  const { data, error } = useSWR('/api/rooms/' + roomNumber, fetcher)
+  const { id } = router.query
+  const { data, error } = useSWR('/api/rooms/' + id, fetcher)
 
   useEffect(() => {
     if (!widgetInitialized) {
